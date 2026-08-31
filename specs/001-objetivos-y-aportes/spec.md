@@ -3,11 +3,11 @@
 | Campo | Valor |
 |---|---|
 | **Identificador** | `001-objetivos-y-aportes` |
-| **Estado** | 🟡 Borrador — pendiente de aprobación |
-| **Versión** | 0.1.0 |
+| **Estado** | 🟢 Aprobada |
+| **Versión** | 1.0.0 |
 | **Fecha** | 2026-08-31 |
-| **Constitución** | v1.0.0 |
-| **Fase siguiente** | Plan técnico (bloqueada hasta aprobar esta spec) |
+| **Constitución** | v1.1.0 |
+| **Fase siguiente** | Plan técnico → `plan.md` |
 
 > Esta spec describe **qué** debe hacer el sistema y **por qué**, nunca **cómo**.
 > No menciona lenguajes, frameworks, bases de datos ni bibliotecas: eso pertenece al plan.
@@ -419,6 +419,7 @@ escritura debe detectar el conflicto y pedir recargar, en vez de pisar el cambio
 | **RF-18** | Exportar todo el grupo en formato tabular. | Art. V | HU-09 |
 | **RF-19** | Detectar edición concurrente de un objetivo y pedir recargar. | RN-18 | — |
 | **RF-20** | Operar varios grupos independientes sin filtración de datos entre ellos. | INV-01 | — |
+| **RF-21** | Permitir que quien abre el enlace se identifique como un miembro y recordarlo en ese dispositivo, para mostrarle primero lo suyo. No es autenticación. | RN-17 | HU-06 |
 
 ## 8. Requisitos no funcionales
 
@@ -455,18 +456,18 @@ escritura debe detectar el conflicto y pedir recargar, en vez de pisar el cambio
 | **CB-14** | Moneda con exponente 2 (p. ej. USD) | La unidad mínima es el centavo. Todas las reglas de reparto operan igual sobre esa unidad. |
 | **CB-15** | Reparto por porcentajes donde alguien queda en 0 pb | Válido: participa del objetivo sin obligación económica. |
 
-## 10. Preguntas abiertas
+## 10. Decisiones de clarificación
 
-Se resuelven **antes** de aprobar la spec. Ninguna bloquea la fase de plan salvo indicación.
+Todas las preguntas abiertas quedaron cerradas antes de aprobar esta spec.
 
-| ID | Pregunta | Estado | Propuesta por defecto |
+| ID | Pregunta | Decisión | Consecuencia |
 |---|---|---|---|
-| **PA-01** | ¿Hace falta periodicidad distinta de la mensual (quincenal, semanal)? | Abierta | Solo mensual en esta versión; el modelo deja el hueco para ampliarlo. |
-| **PA-02** | ¿El saldo a favor debería poder trasladarse a otro objetivo? | Abierta | No en esta versión (RN-09). Se registraría como spec aparte. |
-| **PA-03** | Al abrir el enlace, ¿el sistema debe preguntar "¿quién eres?" y recordarlo en el dispositivo? | Abierta | Sí: mejora mucho HU-06 y HU-05, y no es autenticación. |
-| **PA-04** | ¿Qué pasa con un grupo abandonado? ¿Se conserva indefinidamente? | Abierta | Conservar sin caducidad; revisar si aparece un costo de almacenamiento real. |
-| **PA-05** | ¿Cualquiera con el enlace de edición puede rotar los enlaces? | Abierta | Sí, coherente con SUP-01 (confianza mutua). |
-| **PA-06** | ¿Se necesita un cierre de cuentas por periodo (corte mensual del grupo)? | Abierta | No en esta versión. |
+| **PA-01** | ¿Periodicidad distinta de la mensual? | **Solo mensual.** | El modelo guarda `periodicidad` como campo para no cerrar la puerta, pero solo acepta `MENSUAL`. Añadir quincenal después no rompe datos existentes. |
+| **PA-02** | ¿El saldo a favor se traslada entre objetivos? | **No.** | RN-09 se mantiene: se señala, no se mueve. Candidato a spec 002 si el uso real lo pide. |
+| **PA-03** | ¿La app pregunta "¿quién eres?" al abrir el enlace? | **Sí.** | Nace **RF-21**. Se guarda en el dispositivo, no en el servidor, y se puede cambiar en cualquier momento. No es autenticación y la interfaz debe decirlo. |
+| **PA-04** | ¿Qué pasa con un grupo abandonado? | **Se conserva sin caducidad.** | Se revisa solo si aparece un costo de almacenamiento real. |
+| **PA-05** | ¿Quién puede rotar los enlaces? | **Cualquiera con el enlace de edición.** | Coherente con SUP-01. La interfaz advierte que deja fuera a todos los demás. |
+| **PA-06** | ¿Corte de cuentas mensual del grupo? | **No en esta versión.** | Los objetivos de cuotas ya dan la granularidad mensual necesaria. |
 
 ## 11. Criterios de éxito
 
@@ -512,4 +513,5 @@ La versión se considera lograda si, en uso real con una familia:
 
 | Versión | Fecha | Cambio |
 |---|---|---|
+| 1.0.0 | 2026-08-31 | **Aprobada.** Se cierran PA-01 a PA-06 y nace RF-21. Se adopta la constitución v1.1.0 (entrega incremental). |
 | 0.1.0 | 2026-08-31 | Borrador inicial a partir de la sesión de clarificación. |

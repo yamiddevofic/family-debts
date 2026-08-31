@@ -1,6 +1,6 @@
 # Constitución del proyecto — Deudas Familiares
 
-**Versión:** 1.0.0 · **Ratificada:** 2026-08-31 · **Última enmienda:** 2026-08-31
+**Versión:** 1.1.0 · **Ratificada:** 2026-08-31 · **Última enmienda:** 2026-08-31
 
 Este documento define los principios no negociables del proyecto. Toda especificación,
 plan técnico y tarea de implementación debe poder justificarse contra estos principios.
@@ -88,6 +88,33 @@ sin infraestructura y se reusa desde web, CLI o móvil sin reescribirlo.
    mejor si se lo explicaran en voz alta.
 3. Lo que no está en el alcance de la spec no se construye "por si acaso".
 
+## Artículo IX — Entrega incremental y vertical
+
+El producto crece en rebanadas que funcionan de punta a punta, no en capas que se
+ensamblan al final.
+
+1. Todo incremento entregable debe poder **usarse de verdad** por la familia al terminarlo.
+   Un incremento que solo deja "el backend listo" no es un incremento.
+2. Cada rebanada atraviesa todas las capas: dominio, persistencia e interfaz.
+3. No existe una fase de integración al final. Si algo no está integrado, no está hecho.
+4. Se prefiere entregar poco y usarlo, sobre entregar mucho y suponerlo.
+
+**Por qué:** el riesgo real de este proyecto no es técnico, es de acuerdo. Solo el uso real
+revela si el modelo de reparto refleja cómo funciona la casa.
+
+## Artículo X — Se recorta el alcance, nunca la corrección
+
+Ante presión de tiempo, la variable de ajuste es **cuánto** se entrega, jamás **qué tan
+bien** cuadran las cuentas.
+
+1. Es legítimo posponer una funcionalidad completa a un incremento posterior.
+2. No es legítimo entregar un reparto que no suma, un saldo que se desincroniza o un
+   historial que pierde información, ni "arreglarlo después".
+3. "MVP" describe el alcance, no la calidad de lo que entra en él.
+
+**Por qué:** una app de gastos familiares que muestra una cifra equivocada pierde la
+confianza de la familia una sola vez, y ya no la recupera.
+
 ---
 
 ## Gobernanza
@@ -96,5 +123,10 @@ sin infraestructura y se reusa desde web, CLI o móvil sin reescribirlo.
   principio o se amplía uno existente · PATCH = redacción, ejemplos, aclaraciones.
 - **Enmienda:** se propone en la spec o el plan que la motiva, se registra aquí con fecha
   y se anota el impacto sobre los artefactos ya escritos.
+- **Historial de enmiendas:**
+  - `1.1.0` (2026-08-31) — Se añaden los Artículos IX y X al adoptar metodología ágil.
+    Impacto: la spec 001 se reorganiza en incrementos verticales; no cambia ninguna regla
+    de negocio ya escrita.
+  - `1.0.0` (2026-08-31) — Ratificación inicial.
 - **Precedencia:** esta constitución prevalece sobre cualquier spec, plan o preferencia de
   implementación. Ante conflicto, gana el artículo de número menor.
