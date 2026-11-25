@@ -1,0 +1,17 @@
+{
+  "name": "@deudas/web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@deudas/core": "*",
+    "@tanstack/react-query": "^5.85.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}

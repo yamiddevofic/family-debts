@@ -4,7 +4,7 @@
 |---|---|
 | **Identificador** | `001-objetivos-y-aportes` |
 | **Estado** | 🟢 Aprobada |
-| **Versión** | 1.0.0 |
+| **Versión** | 1.2.0 |
 | **Fecha** | 2026-08-31 |
 | **Constitución** | v1.1.0 |
 | **Fase siguiente** | Plan técnico → `plan.md` |
@@ -268,13 +268,40 @@ Un aporte distingue **quién lo pagó** (`pagadoPor`) de **a quién se le acredi
 > El sistema **no** crea una deuda de Sara hacia papá: eso es una deuda persona→persona,
 > explícitamente fuera de alcance (§3.2). El hecho queda registrado y visible.
 
-### RN-16 — Cancelación y archivado
+### RN-16 — Cancelación, archivado y eliminación
 - **CANCELADO:** el objetivo se abandonó. Deja de contar en los totales del grupo, sus
   obligaciones dejan de exigirse y sus aportes quedan como saldo a favor visible.
 - **ARCHIVADO:** el objetivo se completó y sale de la vista principal. Sigue contando en los
   históricos y en la exportación.
 
-Ninguno de los dos borra datos.
+Ninguno de los dos borra datos, y ambos son reversibles: un objetivo cancelado o archivado
+puede volver a `ACTIVO`.
+
+**Eliminación definitiva.** Un objetivo con al menos un aporte —anulado incluido— **nunca se
+elimina**: se cancela o se archiva. Un objetivo sin ningún aporte sí puede eliminarse, junto
+con sus involucrados, porque no hay historial que perder.
+
+Es la misma frontera que **RN-14** traza para los miembros, y por la misma razón: lo que
+protege el Artículo V es el registro de que alguien puso dinero. Un objetivo que nadie tocó
+—creado por error, con el nombre mal escrito, duplicado— no es historial, es ruido, y
+obligar a conservarlo para siempre haría que la lista de objetivos dejara de ser fiable.
+
+### RN-19 — Eliminación de un grupo completo
+Quien tiene el enlace de edición puede **borrar el grupo entero**: sus miembros, sus objetivos
+y todos sus aportes, anulados incluidos. Es la única operación del sistema que destruye
+historial, y por eso:
+
+- Alcanza **solo al grupo del enlace presentado**. Nunca a otro grupo (INV-01, Artículo VI).
+- Exige una confirmación que no se pueda dar por accidente: hay que **escribir el nombre
+  exacto del grupo**. Un botón con "¿estás seguro?" se acepta sin leer.
+- Es **irreversible y sin respaldo**. La interfaz lo dice con esas palabras antes de pedir la
+  confirmación, y ofrece exportar primero cuando la exportación exista (RF-18).
+
+**Por qué esto no contradice el Artículo V.** Lo que ese artículo prohíbe es que un dato
+desaparezca *en silencio* o *a medias* mientras el grupo sigue vivo: que alguien borre un
+aporte y el saldo cambie sin dejar rastro. Aquí no queda ningún saldo que explicar, porque no
+queda grupo. Es lo contrario de encerrar los datos de la familia (RNF-09): quien los puso
+puede llevárselos y puede borrarlos.
 
 ### RN-17 — Aislamiento y acceso por enlace
 - Cada grupo tiene un **enlace de edición** y un **enlace de solo lectura**, ambos con un
@@ -383,6 +410,13 @@ escritura debe detectar el conflicto y pedir recargar, en vez de pisar el cambio
   **entonces** el sistema me advierte con nombre y monto antes de aplicarlo.
 - **Dado** un objetivo que se abandonó, **cuando** lo cancelo, **entonces** deja de contar en
   los totales del grupo y sus aportes quedan visibles como saldo a favor (RN-16).
+- **Dado** un objetivo creado por error y sin ningún aporte, **cuando** lo elimino,
+  **entonces** desaparece del grupo (RN-16).
+- **Dado** un objetivo con aportes, **cuando** intento eliminarlo, **entonces** el sistema lo
+  impide y ofrece cancelarlo o archivarlo (RN-16, Artículo V).
+- **Dado** que alguien más cambió el mismo objetivo mientras yo lo editaba, **cuando** guardo,
+  **entonces** se me avisa del conflicto y se me pide recargar, en vez de pisar su cambio
+  (RN-18).
 
 ### HU-09 — Exportar el historial
 > Como organizador quiero bajar todo a un archivo, para no depender de que la app exista
@@ -392,6 +426,15 @@ escritura debe detectar el conflicto y pedir recargar, en vez de pisar el cambio
   los objetivos, obligaciones y aportes, incluidos los anulados y los archivados.
 - **Dado** el archivo exportado, **cuando** lo abro en una hoja de cálculo, **entonces** los
   montos son numéricos y las fechas legibles, sin necesidad de procesarlos.
+
+> Como organizador quiero poder borrar el grupo entero cuando ya no lo necesitamos, para que
+> nuestros datos no se queden ahí para siempre.
+
+- **Dado** un grupo, **cuando** pido eliminarlo y escribo su nombre exacto, **entonces**
+  desaparecen sus miembros, objetivos y aportes, y el enlace deja de funcionar (RN-19).
+- **Dado** que escribo mal el nombre, **cuando** confirmo, **entonces** no se borra nada.
+- **Dado** el enlace de solo lectura, **cuando** intento eliminar el grupo, **entonces** se
+  rechaza.
 
 ---
 
@@ -415,11 +458,13 @@ escritura debe detectar el conflicto y pedir recargar, en vez de pisar el cambio
 | **RF-14** | Marcar objetivos saldados y periodos/miembros en mora. | RN-10, RN-12 | HU-04, HU-06 |
 | **RF-15** | Desglosar cualquier cifra hasta los aportes que la componen. | Art. V | HU-06 |
 | **RF-16** | Modificar monto, involucrados o reparto de un objetivo con aportes, avisando. | RN-11 | HU-08 |
-| **RF-17** | Cancelar y archivar objetivos. | RN-16 | HU-08 |
+| **RF-17** | Cancelar, archivar y reactivar objetivos. | RN-16 | HU-08 |
 | **RF-18** | Exportar todo el grupo en formato tabular. | Art. V | HU-09 |
 | **RF-19** | Detectar edición concurrente de un objetivo y pedir recargar. | RN-18 | — |
 | **RF-20** | Operar varios grupos independientes sin filtración de datos entre ellos. | INV-01 | — |
 | **RF-21** | Permitir que quien abre el enlace se identifique como un miembro y recordarlo en ese dispositivo, para mostrarle primero lo suyo. No es autenticación. | RN-17 | HU-06 |
+| **RF-22** | Eliminar definitivamente un objetivo que no tenga ningún aporte, impidiéndolo cuando sí los tiene. | RN-16 | HU-08 |
+| **RF-23** | Eliminar un grupo entero con todos sus datos, exigiendo escribir su nombre exacto como confirmación. | RN-19 | HU-09 |
 
 ## 8. Requisitos no funcionales
 
@@ -455,6 +500,10 @@ escritura debe detectar el conflicto y pedir recargar, en vez de pisar el cambio
 | **CB-13** | Anular un aporte de un objetivo archivado | Permitido, con advertencia de que altera un histórico ya cerrado. |
 | **CB-14** | Moneda con exponente 2 (p. ej. USD) | La unidad mínima es el centavo. Todas las reglas de reparto operan igual sobre esa unidad. |
 | **CB-15** | Reparto por porcentajes donde alguien queda en 0 pb | Válido: participa del objetivo sin obligación económica. |
+| **CB-16** | Eliminar un objetivo que solo tiene aportes anulados | Inválido. Un aporte anulado sigue siendo historial (Artículo V): se cancela o se archiva. |
+| **CB-17** | Editar un objetivo dejándolo con un solo involucrado | Válido, como CB-01. Los demás quedan con saldo a favor si ya aportaron, y se advierte antes de confirmar. |
+| **CB-18** | Eliminar un grupo escribiendo mal su nombre | No se borra nada. El sistema lo dice y deja volver a intentarlo. |
+| **CB-19** | Eliminar un grupo con dos enlaces vigentes | Ambos dejan de funcionar de inmediato: no queda grupo al que resolver. |
 
 ## 10. Decisiones de clarificación
 
@@ -513,5 +562,7 @@ La versión se considera lograda si, en uso real con una familia:
 
 | Versión | Fecha | Cambio |
 |---|---|---|
+| 1.2.0 | 2026-09-04 | Nace **RN-19** y **RF-23**: se puede borrar un grupo entero, con confirmación escrita. HU-09 gana la historia. Nuevos CB-18 y CB-19. |
+| 1.1.0 | 2026-09-04 | Nace **RF-22** y RN-16 gana la frontera de la eliminación, con la misma regla que RN-14 usa para los miembros. RF-17 incluye reactivar. Nuevos CB-16 y CB-17. Motivado por la petición de poder borrar y editar objetivos desde la interfaz. |
 | 1.0.0 | 2026-08-31 | **Aprobada.** Se cierran PA-01 a PA-06 y nace RF-21. Se adopta la constitución v1.1.0 (entrega incremental). |
 | 0.1.0 | 2026-08-31 | Borrador inicial a partir de la sesión de clarificación. |

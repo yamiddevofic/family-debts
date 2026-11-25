@@ -1,5 +1,12 @@
 node_modules/
 dist/
+*.tsbuildinfo
+datos/
+*.db
+*.db-wal
+*.db-shm
+test-results/
+playwright-report/
 build/
 .env
 .env.*

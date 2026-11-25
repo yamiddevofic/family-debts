@@ -121,13 +121,39 @@ la API responde `409` y la interfaz pide recargar.
 - **Exigido por:** RF-19, RN-18.
 - **Los aportes no llevan versión:** solo se añaden, así que no compiten (RN-18).
 
-### DT-11 — Las fechas civiles son cadenas `AAAA-MM-DD`
+### DT-11 — Las fechas civiles son cadenas `AAAA-MM-DD` por dentro y `DD-MM-AAAA` a la vista
 Vencimientos, fechas de valor y fecha de referencia son cadenas, nunca `Date`.
 
-- **Exigido por:** RN-05, RN-12, Artículo II.
-- **Por qué:** "el 5 de diciembre" no tiene hora ni zona horaria. Usar `Date` invita a que un
-  vencimiento se corra un día según el huso del teléfono, y eso convierte en moroso a quien
-  no lo es. Solo `registradoEn` y `anuladoEn` son marcas de tiempo reales, en UTC.
+- **Exigido por:** RN-05, RN-12, RNF-03, Artículo II.
+- **Por qué cadenas y no `Date`:** "el 5 de diciembre" no tiene hora ni zona horaria. Usar
+  `Date` invita a que un vencimiento se corra un día según el huso del teléfono, y eso
+  convierte en moroso a quien no lo es. Solo `registradoEn` y `anuladoEn` son marcas de
+  tiempo reales, en UTC.
+- **Por qué `AAAA-MM-DD` dentro:** el orden lexicográfico coincide con el cronológico, así
+  que `ORDER BY fecha_limite`, los rangos en SQL y las comparaciones del núcleo funcionan
+  sobre la cadena, sin convertir. RN-05 y RN-12 dependen de eso.
+- **Por qué `DD-MM-AAAA` fuera:** es como se escribe y se lee una fecha en casa. Un
+  vencimiento en formato ISO se lee mal de un vistazo en el teléfono, y RNF-03 pide
+  justamente que se entienda de un vistazo.
+
+**Dónde vive la conversión.** Solo en `apps/web`, en el borde de presentación y captura:
+
+```ts
+// core y api hablan AAAA-MM-DD SIEMPRE. web traduce en la entrada y en la salida.
+function aVista(f: FechaCivil): string;         // '2026-12-05' -> '05-12-2026'
+function deVista(s: string): FechaCivil | null; // '05-12-2026' -> '2026-12-05'; null si no es válida
+```
+
+- El núcleo **no conoce** `DD-MM-AAAA`: sigue recibiendo y devolviendo `FechaCivil` en ISO.
+  Meter dos formatos en `core` sería exactamente el tipo de ambigüedad que el Artículo II
+  quiere fuera.
+- La API tampoco: el JSON viaja en ISO. Si mañana hay otra interfaz, no hereda el formato de
+  esta.
+- La captura usa `<input type="date">`, que ya muestra la fecha según la configuración del
+  teléfono y entrega ISO. `deVista` cubre el caso de escritura manual y el respaldo cuando
+  ese control no está disponible.
+- **Prueba:** ida y vuelta (`deVista(aVista(f)) === f`) sobre fechas generadas al azar, y un
+  caso que confirma que ninguna fuente de `core` ni de `api` contiene `DD-MM-AAAA`.
 
 ### DT-12 — Los identificadores se generan fuera del núcleo
 `crypto.randomUUID()` en el adaptador; el núcleo los recibe como parámetro.
@@ -206,7 +232,7 @@ CREATE TABLE objetivo (
   modalidad    TEXT    NOT NULL CHECK (modalidad IN ('REPARTO_UNICO','CUOTAS_PERIODICAS')),
   estado       TEXT    NOT NULL CHECK (estado IN ('ACTIVO','CANCELADO','ARCHIVADO')),
   periodicidad TEXT             CHECK (periodicidad IS NULL OR periodicidad = 'MENSUAL'),
-  fecha_inicio TEXT,                                        -- AAAA-MM-DD (DT-11)
+  fecha_inicio TEXT,                                        -- AAAA-MM-DD, se muestra DD-MM-AAAA (DT-11)
   fecha_limite TEXT,
   version      INTEGER NOT NULL DEFAULT 1,                  -- DT-10
   creado_en    TEXT    NOT NULL
@@ -326,3 +352,4 @@ trazabilidad deja de depender de que alguien se acuerde.
 | Versión | Fecha | Cambio |
 |---|---|---|
 | 1.0.0 | 2026-08-31 | Plan inicial aprobado sobre la spec 001 v1.0.0. |
+| 1.1.0 | 2026-09-03 | DT-11: las fechas se muestran y se capturan en `DD-MM-AAAA`; el almacenamiento, la API y el núcleo siguen en `AAAA-MM-DD`. |

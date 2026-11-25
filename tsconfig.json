@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [
+      "node"
+    ],
+    "moduleResolution": "bundler",
+    "module": "ESNext"
+  },
+  "include": [
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "scripts",
+    "e2e"
+  ]
+}

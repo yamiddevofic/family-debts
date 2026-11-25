@@ -1,0 +1,591 @@
+/*
+ * Sistema visual — RNF-03 (móvil), RNF-07 (español) y RNF-08 (accesibilidad).
+ *
+ * Plan: una app de dinero familiar, no un producto financiero. Verde sobrio como acento
+ * porque es el color del "vas bien" y aquí la buena noticia es estar al día; rojo y ámbar
+ * reservados para deuda y aviso, nunca decorativos. Superficies separadas por borde y no por
+ * sombra: la pantalla es densa en cifras y las sombras la ensucian.
+ *
+ * Tres reglas que no se negocian:
+ *  · Todo lo pulsable mide al menos 44 px y los campos tienen 16 px de tipo (iOS no hace zoom).
+ *  · Las medidas van en `rem`, para que el tamaño de texto del sistema se respete.
+ *  · Ningún estado se comunica solo con color: siempre hay texto o icono al lado.
+ */
+
+:root {
+  /* Color por rol, nunca por apariencia */
+  --fondo: #f6f5f2;
+  --superficie: #ffffff;
+  --superficie-hundida: #f1efea;
+  --borde: #d5d0c7;
+  --borde-fuerte: #a8a196;
+  --texto: #1c1b19;
+  --texto-suave: #55504a;
+  --acento: #17603f;
+  --acento-tenue: #e0f0e7;
+  --peligro: #8f2525;
+  --peligro-tenue: #fbe7e7;
+  --aviso: #6b4708;
+  --aviso-tenue: #fcefd9;
+  --foco: #1d4ed8;
+
+  /* Espaciado: escala de 4 y nada fuera de ella */
+  --e1: 0.25rem;
+  --e2: 0.5rem;
+  --e3: 0.75rem;
+  --e4: 1rem;
+  --e6: 1.5rem;
+  --e8: 2rem;
+  --e12: 3rem;
+
+  /* Radios: tres, con jerarquía */
+  --radio-sm: 0.375rem;
+  --radio-md: 0.75rem;
+  --radio-full: 999px;
+
+  --toque: 2.75rem; /* 44 px */
+  --ancho-lectura: 65ch;
+
+  /* Tipografía fluida: el mínimo es el real a 320 px */
+  --texto-sm: 0.875rem;
+  --texto-base: 1rem;
+  --texto-lg: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  --texto-xl: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  --texto-2xl: clamp(1.5rem, 1.25rem + 1.2vw, 2.25rem);
+}
+
+:root:not([data-tema='claro']) {
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #16181a;
+    --superficie: #202326;
+    --superficie-hundida: #191c1e;
+    --borde: #383c41;
+    --borde-fuerte: #5a5f66;
+    --texto: #f2f1ef;
+    --texto-suave: #b3afa8;
+    --acento: #6ddaa2;
+    --acento-tenue: #14332a;
+    --peligro: #ff9d9d;
+    --peligro-tenue: #3a1d1d;
+    --aviso: #f2c368;
+    --aviso-tenue: #3a2e16;
+    --foco: #9dbbff;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: var(--texto-base);
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  /* Evita que una tabla ancha empuje la página entera. */
+  overflow-x: hidden;
+}
+
+/* ── Estructura ──────────────────────────────────────────────────────────────────────── */
+
+/*
+ * La cabecera se queda arriba porque el tablero se recorre con el pulgar y saber en qué
+ * grupo estás no debería costar un scroll hasta arriba.
+ */
+.cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--fondo);
+  border-bottom: 1px solid var(--borde);
+  padding-block: var(--e3);
+  margin-bottom: var(--e4);
+}
+.cabecera__fila {
+  width: min(100% - var(--e8), 48rem);
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e2);
+}
+.cabecera h1 { font-size: var(--texto-lg); margin: 0; }
+.cabecera__identidad { font-size: var(--texto-sm); color: var(--texto-suave); margin: 0; }
+
+.envoltorio {
+  width: min(100% - var(--e8), 48rem);
+  margin-inline: auto;
+  padding-block: var(--e4) var(--e12);
+}
+
+h1 {
+  font-size: var(--texto-2xl);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--e1);
+}
+h2 {
+  font-size: var(--texto-xl);
+  line-height: 1.25;
+  margin: var(--e6) 0 var(--e3);
+}
+h3 {
+  font-size: var(--texto-lg);
+  margin: 0 0 var(--e2);
+}
+h4 {
+  font-size: var(--texto-base);
+  margin: var(--e4) 0 var(--e2);
+}
+p {
+  margin: 0 0 var(--e3);
+  max-width: var(--ancho-lectura);
+}
+
+.suave { color: var(--texto-suave); }
+.pequeno { font-size: var(--texto-sm); }
+.fila { display: flex; gap: var(--e2); align-items: center; flex-wrap: wrap; }
+.entre { display: flex; justify-content: space-between; align-items: baseline; gap: var(--e2); }
+.columna { display: flex; flex-direction: column; gap: var(--e3); }
+
+/* Dos campos cortos y relacionados: apilados en móvil, en fila cuando caben. */
+.pareja { display: grid; gap: var(--e2); }
+@media (min-width: 30rem) {
+  .pareja { grid-template-columns: 1fr 1fr; gap: var(--e4); }
+}
+
+/*
+ * Tres niveles de superficie, no una tarjeta para todo. Que cada bloque tenga el mismo
+ * borde y el mismo radio sin importar su importancia es lo que hace que una pantalla se
+ * lea como una lista de cajas en vez de como una jerarquía.
+ *
+ *  · `--mia`   protagonista: lo que el usuario vino a saber.
+ *  · base      contenido: un objetivo, una persona.
+ *  · `--anidada` herramienta: un formulario que se abrió dentro de algo.
+ */
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-md);
+  padding: var(--e4);
+  margin-bottom: var(--e3);
+  /* La tarjeta responde a su propio ancho, no al de la ventana. */
+  container-type: inline-size;
+}
+
+.tarjeta__titulo { margin-top: 0; }
+
+.tarjeta--mia {
+  background: var(--acento-tenue);
+  border-color: color-mix(in srgb, var(--acento) 35%, transparent);
+  padding: var(--e6) var(--e4);
+}
+
+.tarjeta--anidada {
+  background: var(--superficie-hundida);
+  border-radius: var(--radio-sm);
+  border-style: dashed;
+  margin-top: var(--e3);
+}
+
+.tarjeta--inactiva { opacity: 0.7; }
+
+/* ── Controles ───────────────────────────────────────────────────────────────────────── */
+
+button,
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e2);
+  min-height: var(--toque);
+  min-width: var(--toque);
+  padding: var(--e2) var(--e4);
+  border-radius: var(--radio-sm);
+  border: 1px solid var(--borde-fuerte);
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 160ms ease-out, border-color 160ms ease-out;
+}
+
+/* `hover` no existe en táctil: nada depende de él y el estilo se encapsula. */
+@media (hover: hover) {
+  button:hover:not(:disabled),
+  .boton:hover { background: var(--superficie-hundida); border-color: var(--texto-suave); }
+}
+
+button:active:not(:disabled) { transform: translateY(1px); }
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 3px solid var(--foco);
+  outline-offset: 2px;
+  border-radius: var(--radio-sm);
+}
+
+.boton--principal {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: #fff;
+  font-weight: 600;
+}
+@media (prefers-color-scheme: dark) {
+  .boton--principal { color: #10231a; }
+}
+@media (hover: hover) {
+  .boton--principal:hover:not(:disabled) { filter: brightness(1.08); background: var(--acento); }
+}
+
+.boton--peligro { color: var(--peligro); border-color: var(--peligro); background: transparent; }
+.boton--peligro-solido { background: var(--peligro); border-color: var(--peligro); color: #fff; font-weight: 600; }
+@media (prefers-color-scheme: dark) {
+  .boton--peligro-solido { color: #2a1010; }
+}
+
+.boton--texto {
+  background: none;
+  border: none;
+  color: var(--foco);
+  text-decoration: underline;
+  padding-inline: var(--e1);
+  min-height: var(--toque);
+}
+
+/* En móvil la acción principal ocupa el ancho; en pantallas anchas, su contenido. */
+.acciones-formulario { display: flex; flex-direction: column; gap: var(--e2); }
+.acciones-formulario > button { width: 100%; }
+@media (min-width: 30rem) {
+  .acciones-formulario { flex-direction: row; }
+  .acciones-formulario > button { width: auto; }
+}
+
+/* ── Formularios ─────────────────────────────────────────────────────────────────────── */
+
+label { display: block; font-weight: 600; margin-bottom: var(--e1); }
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: var(--toque);
+  padding: var(--e2) var(--e3);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-sm);
+  background: var(--superficie);
+  color: var(--texto);
+  font-family: inherit;
+  /* 16 px exactos: por debajo, iOS hace zoom al enfocar el campo. */
+  font-size: max(1rem, var(--texto-base));
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  width: 1.15rem;
+  height: 1.15rem;
+  min-height: 0;
+  flex: none;
+  accent-color: var(--acento);
+}
+
+.campo { margin-bottom: var(--e4); }
+.campo .ayuda {
+  font-size: var(--texto-sm);
+  color: var(--texto-suave);
+  margin: var(--e1) 0 0;
+}
+
+.grupo-campos {
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-md);
+  padding: var(--e3);
+  margin: 0 0 var(--e4);
+}
+.grupo-campos legend { font-weight: 600; padding-inline: var(--e2); }
+
+/* La etiqueta entera es el área táctil, no solo la casilla. */
+.opcion {
+  display: flex;
+  gap: var(--e2);
+  align-items: center;
+  min-height: var(--toque);
+  font-weight: 400;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+.opcion--alta { align-items: flex-start; padding-block: var(--e2); }
+.opcion--alta input { margin-top: var(--e1); }
+
+/* ── Avisos y etiquetas ──────────────────────────────────────────────────────────────── */
+
+.aviso {
+  border-radius: var(--radio-md);
+  padding: var(--e3);
+  margin-bottom: var(--e3);
+  border: 1px solid;
+}
+.aviso__titulo { margin: 0 0 var(--e2); }
+.aviso--error { background: var(--peligro-tenue); border-color: var(--peligro); color: var(--texto); }
+.aviso--ojo { background: var(--aviso-tenue); border-color: var(--aviso); color: var(--texto); }
+.aviso--bien { background: var(--acento-tenue); border-color: var(--acento); color: var(--texto); }
+
+.lista-avisos { margin: 0 0 var(--e3); padding-left: var(--e4); }
+.lista-avisos li { margin-bottom: var(--e2); }
+
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e1);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  padding: var(--e1) var(--e2);
+  border-radius: var(--radio-full);
+  border: 1px solid;
+  white-space: nowrap;
+}
+.etiqueta--saldado { background: var(--acento-tenue); border-color: var(--acento); color: var(--acento); }
+.etiqueta--mora { background: var(--peligro-tenue); border-color: var(--peligro); color: var(--peligro); }
+.etiqueta--favor { background: var(--aviso-tenue); border-color: var(--aviso); color: var(--aviso); }
+.etiqueta--neutra { background: var(--superficie-hundida); border-color: var(--borde-fuerte); color: var(--texto-suave); }
+
+/* ── Cifras y avance ─────────────────────────────────────────────────────────────────── */
+
+.barra {
+  height: 0.5rem;
+  background: var(--superficie-hundida);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-full);
+  overflow: hidden;
+}
+.barra > span { display: block; height: 100%; background: var(--acento); }
+
+.cifra { font-variant-numeric: tabular-nums; font-weight: 700; }
+.cifra--grande { font-size: var(--texto-xl); }
+.cifra--debe { color: var(--peligro); }
+.cifra--favor { color: var(--aviso); }
+.cifra--bien { color: var(--acento); }
+
+/* ── Tablas ──────────────────────────────────────────────────────────────────────────── */
+
+/*
+ * Muchas columnas y cada fila es una entidad: se desplazan en horizontal dentro de su
+ * contenedor, nunca la página. El degradado del borde derecho hace visible que hay más:
+ * un scroll invisible no se descubre.
+ */
+/* Las tablas que no viven dentro de una tarjeta necesitan su propio contexto de consulta. */
+.tabla-apilable-envoltorio { container-type: inline-size; }
+
+.tabla-ancha {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  background:
+    linear-gradient(to right, var(--superficie) 30%, transparent) left / 2rem 100% no-repeat,
+    linear-gradient(to left, var(--superficie) 30%, transparent) right / 2rem 100% no-repeat,
+    linear-gradient(to right, rgb(0 0 0 / 12%), transparent) left / 0.6rem 100% no-repeat,
+    linear-gradient(to left, rgb(0 0 0 / 12%), transparent) right / 0.6rem 100% no-repeat;
+  background-attachment: local, local, scroll, scroll;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+th,
+td {
+  text-align: left;
+  padding: var(--e2) var(--e1);
+  border-bottom: 1px solid var(--borde);
+  vertical-align: top;
+}
+th {
+  font-size: var(--texto-sm);
+  color: var(--texto-suave);
+  font-weight: 600;
+  white-space: nowrap;
+}
+td.n,
+th.n { text-align: right; }
+
+/*
+ * Cuando la tarjeta que contiene la tabla es angosta, cada fila se convierte en un bloque
+ * con sus etiquetas al lado: una tabla de cuatro columnas a 375 px es ilegible, y encogerla
+ * hasta que quepa es peor que cambiarla de forma. La etiqueta viene de `data-columna`, así
+ * que no hay texto duplicado en el marcado.
+ */
+@container (max-width: 30rem) {
+  .tabla-apilable thead { display: none; }
+  .tabla-apilable,
+  .tabla-apilable tbody,
+  .tabla-apilable tr,
+  .tabla-apilable td { display: block; width: 100%; }
+
+  .tabla-apilable tr {
+    padding: var(--e2) 0;
+    border-bottom: 1px solid var(--borde);
+  }
+  .tabla-apilable tr:last-child { border-bottom: 0; }
+
+  .tabla-apilable td {
+    border: 0;
+    padding: var(--e1) 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--e4);
+    text-align: right;
+  }
+  .tabla-apilable td::before {
+    content: attr(data-columna);
+    font-size: var(--texto-sm);
+    color: var(--texto-suave);
+    text-align: left;
+    flex: none;
+  }
+  /* La primera celda es el nombre de la fila: manda, y no necesita etiqueta. */
+  .tabla-apilable td:first-child {
+    font-weight: 650;
+    text-align: left;
+    padding-top: var(--e2);
+  }
+  .tabla-apilable td:first-child::before { content: none; }
+  /* Sin desbordamiento lateral que anunciar cuando ya no hay tabla. */
+  .tabla-apilable-envoltorio { background: none; overflow-x: visible; }
+}
+
+.anulado > td:not(.sin-tachar) { text-decoration: line-through; color: var(--texto-suave); }
+
+/* ── Acciones secundarias ────────────────────────────────────────────────────────────── */
+
+/*
+ * Las secciones son un control segmentado y no tres botones iguales: tres botones en fila
+ * se leen como tres acciones, y estas no hacen nada, solo cambian lo que se mira.
+ */
+.secciones {
+  display: flex;
+  gap: var(--e1);
+  padding: var(--e1);
+  background: var(--superficie-hundida);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-full);
+  margin-bottom: var(--e4);
+}
+.secciones button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: var(--radio-full);
+  font-weight: 500;
+  padding-inline: var(--e2);
+}
+.secciones button[aria-current='page'] {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  font-weight: 650;
+}
+@media (hover: hover) {
+  .secciones button:hover:not([aria-current='page']) { background: transparent; color: var(--acento); }
+}
+
+.acciones { margin-top: var(--e3); }
+.acciones__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--e2);
+  margin-top: var(--e2);
+  padding: var(--e3);
+  background: var(--superficie-hundida);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-md);
+}
+.acciones__panel button { justify-content: flex-start; text-align: left; }
+.acciones__nota { margin: 0; }
+
+/*
+ * Los objetivos se reacomodan solos: una columna mientras la tarjeta necesite el ancho, dos
+ * cuando quepan sin apretar. Sin media query, porque el que manda es el contenido.
+ */
+.rejilla-objetivos {
+  display: grid;
+  gap: var(--e3);
+  grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr));
+  align-items: start;
+}
+.rejilla-objetivos > * { margin-bottom: 0; }
+
+.zona-riesgo { border-color: var(--peligro); }
+
+/* ── Utilidades ──────────────────────────────────────────────────────────────────────── */
+
+.enlace-caja {
+  display: block;
+  width: 100%;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--texto-sm);
+  background: var(--superficie-hundida);
+  border: 1px dashed var(--borde-fuerte);
+  border-radius: var(--radio-sm);
+  padding: var(--e3);
+  margin-bottom: var(--e2);
+}
+
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.separador { border: 0; border-top: 1px solid var(--borde); margin: var(--e4) 0; }
+
+.sin-margen-abajo { margin-bottom: 0; }
+.lista-simple { margin: var(--e2) 0; padding-left: var(--e4); }
+.avanzado { margin-top: var(--e3); }
+.filtros { margin-bottom: var(--e3); }
+
+/* Elegir quién eres: la lista es la acción principal de esa pantalla. */
+.boton-persona { justify-content: flex-start; text-align: left; font-size: var(--texto-lg); }
+
+.desplegable {
+  display: flex;
+  align-items: center;
+  min-height: var(--toque);
+  cursor: pointer;
+}
+
+.pie { margin-top: var(--e8); font-size: var(--texto-sm); color: var(--texto-suave); }
+
+img { max-width: 100%; height: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  button:active:not(:disabled) { transform: none; }
+}
